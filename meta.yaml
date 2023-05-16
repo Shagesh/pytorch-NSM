@@ -1,0 +1,38 @@
+package:
+  name: "pynsm"
+  version: "0.0.1"
+
+source:
+  git_rev: v0.0.1
+  git_url: https://github.com/Shagesh/pytorch-NSM
+
+requirements:
+  host:
+    - python
+    - setuptools
+  build:
+    - python
+  run:
+    - python
+    - pip
+    - black
+    - pytest
+    - numpy
+    - scipy
+    - pandas
+    - tqdm
+    - matplotlib
+    - seaborn
+    - pytorch
+    - torchvision
+    - scikit-learn
+    - ipykernel
+    - ipywidgets>=7.0,<8.0
+    - jupyter
+
+about:
+  home: https://github.com/Shagesh/pytorch-NSM
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: "A PyTorch implementation of non-negative similarity matching"
