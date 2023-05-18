@@ -23,9 +23,10 @@ Next, create a new environment and install the necessary pre-requisites using
 conda env create -f environment.yml
 ```
 
-Finally, install the `pynsm` package:
+Finally, activate the environment and install the `pynsm` package:
 
 ```sh
+conda activate pynsm
 pip install -e .
 ```
 
