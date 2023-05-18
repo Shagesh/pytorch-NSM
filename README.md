@@ -5,11 +5,11 @@ This is an implementation of non-negative similarity matching (NSM) for PyTorch 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Example usage](#examples)
+- [Example usage](#example-usage)
 - [Features](#features)
 - [Questions?](#questions)
 
-## Installation<a name="installation"></a>
+## Installation
 
 It is strongly recommended to use a virtual environment when working with this code. The installation instructions below include the commands for creating the virtual environment, using either `conda` (recommended) or `venv`.
 
@@ -57,11 +57,11 @@ pip install -e .
 
 The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
 
-## Example Usage<a name="examples"></a>
+## Example Usage
 
 See the notebooks in the [`examples`](examples) folder to get started with the package.
 
-## Features<a name="features"></a>
+## Features
 
 ### Neural Similarity Model (NSM) Convolution
 
@@ -94,6 +94,6 @@ The second part of the code introduces the `Supervised_NSM_Conv` class, which im
 
 The `Supervised_NSM_Conv` class also includes additional methods for pooling the output and visualizing the learned features.
 
-## Questions?<a name="features"></a>
+## Questions?
 
 Please contact us by opening an issue on GitHub.
