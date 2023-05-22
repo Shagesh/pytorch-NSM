@@ -40,7 +40,7 @@ class NSM_Conv(nn.Module):
         self.dropout_p = dropout_p
 
         ## dropout and input whitening ##
-        if dropout_p is not None:
+        if self.dropout_p is not None:
             self.dropout = nn.Dropout(p=self.dropout_p)
         self.x_whitening = x_whitening
 
@@ -131,8 +131,8 @@ class NSM_Conv(nn.Module):
         self.loss_NSM_conv(y, x).backward()
 
         # gradients
-        gW = self.encoder.weight.grad.data
-        gM = self.competitor.weight.grad.data
+        gW: torch.Tensor = self.encoder.weight.grad  # type: ignore
+        gM: torch.Tensor = self.competitor.weight.grad  # type: ignore
 
         # updates
         lr_schedule = 1  # 1 / ( 1 + self.t_step * self.decay )
@@ -141,8 +141,8 @@ class NSM_Conv(nn.Module):
             self.encoder.weight -= etaW * lr_schedule * gW
             self.competitor.weight += (etaM / tau) * lr_schedule * gM
 
-        self.encoder.weight.grad.zero_()
-        self.competitor.weight.grad.zero_()
+        self.encoder.weight.grad.zero_()  # type: ignore
+        self.competitor.weight.grad.zero_()  # type: ignore
         self.t_step += 10
 
     def plot_features(self):
