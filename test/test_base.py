@@ -11,7 +11,7 @@ class MockModule(IterationModule):
         self.is_converged = starts_converged
         self.n_calls = 0
 
-    def iteration(self, i: int):
+    def iteration(self, i: int, *args, **kwargs):
         assert i == self.n_calls
         self.n_calls += 1
 
@@ -21,18 +21,29 @@ class MockModule(IterationModule):
 
 class MockModuleWithPrePost(IterationModule):
     def __init__(self):
-        super().__init__()
+        super().__init__(max_iterations=5)
         self.n_calls_pre = 0
         self.n_calls_post = 0
 
-    def iteration(self, i: int):
-        pass
+        self.last_call = None
+        self.last_pre_call = None
+        self.last_post_call = None
+        self.last_conv_call = None
 
-    def pre_iteration(self):
+    def iteration(self, i: int, *args, **kwargs):
+        self.last_call = (args, kwargs)
+
+    def pre_iteration(self, *args, **kwargs):
         self.n_calls_pre += 1
+        self.last_pre_call = (args, kwargs)
 
-    def post_iteration(self):
+    def post_iteration(self, *args, **kwargs):
         self.n_calls_post += 1
+        self.last_post_call = (args, kwargs)
+
+    def converged(self, *args, **kwargs) -> bool:
+        self.last_conv_call = (args, kwargs)
+        return False
 
 
 def test_base_inherits_from_module():
@@ -71,3 +82,16 @@ def test_pre_and_post_iteration_are_called_once():
     module()
     assert module.n_calls_pre == 1
     assert module.n_calls_post == 1
+
+
+def test_args_kwargs_passed_to_iteration_and_pre_post_converged():
+    module = MockModuleWithPrePost()
+    module(2, 3, foo="bar")
+
+    for last in [
+        module.last_call,
+        module.last_pre_call,
+        module.last_post_call,
+        module.last_conv_call,
+    ]:
+        assert last == ((2, 3), {"foo": "bar"})
