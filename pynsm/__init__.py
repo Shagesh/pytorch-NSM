@@ -1,1 +1,1 @@
-from .arch import IterationModule, NSM_Conv, Supervised_NSM_Conv
+from .arch import IterationModule, IterationLossModule, NSM_Conv, Supervised_NSM_Conv
