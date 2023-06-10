@@ -9,10 +9,10 @@ class IterationModule(nn.Module):
     """A module where the forward pass is called iteratively.
 
     The `forward()` method calls `self.iteration()` iteratively, until either a maximum
-    number of steps is reached, or `self.converged()` is true. The current iteration
-    index, as well as any arguments passed to `forward()` are passed along:
+    number of steps is reached, or `self.converged()` is true. Any arguments passed to
+    `forward()` are passed along:
 
-        self.iteration(idx, *args, **kwargs)
+        self.iteration(*args, **kwargs)
 
     Pre- and post-processing can be achieved by implementing `self.pre_iteration()` and
     `self.post_iteration()`, which are called before the first iteration and after the
@@ -35,13 +35,13 @@ class IterationModule(nn.Module):
     def forward(self, *args, **kwargs) -> Any:
         self.pre_iteration(*args, **kwargs)
         for i in range(self.max_iterations):
-            self.iteration(i, *args, **kwargs)
+            self.iteration(*args, **kwargs)
             if self.converged(*args, **kwargs):
                 break
 
         self.post_iteration(*args, **kwargs)
 
-    def iteration(self, i: int, *args, **kwargs):
+    def iteration(self, *args, **kwargs):
         raise NotImplementedError(
             f'Module [{type(self).__name__}] is missing the required "iteration" function'
         )
@@ -119,10 +119,10 @@ class IterationLossModule(IterationModule):
 
         self.iteration_projection = iteration_projection
 
-    def iteration(self, i: int, *args, **kwargs):
+    def iteration(self, *args, **kwargs):
         self.iteration_optimizer.zero_grad()
 
-        loss = self.iteration_loss(i, *args, **kwargs)
+        loss = self.iteration_loss(*args, **kwargs)
         loss.backward()
 
         self.iteration_optimizer.step()
@@ -154,7 +154,7 @@ class IterationLossModule(IterationModule):
 
         super().post_iteration(*args, **kwargs)
 
-    def iteration_loss(self, i: int, *args, **kwargs):
+    def iteration_loss(self, *args, **kwargs):
         raise NotImplementedError(
             f"Module [{type(self).__name__}] is missing the required "
             f'"iteration_loss" function'

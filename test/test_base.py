@@ -16,8 +16,7 @@ class MockModule(IterationModule):
         self.is_converged = starts_converged
         self.n_calls = 0
 
-    def iteration(self, i: int, *args, **kwargs):
-        assert i == self.n_calls
+    def iteration(self, *args, **kwargs):
         self.n_calls += 1
 
     def converged(self) -> bool:
@@ -35,7 +34,7 @@ class MockModuleWithPrePost(IterationModule):
         self.last_post_call = None
         self.last_conv_call = None
 
-    def iteration(self, i: int, *args, **kwargs):
+    def iteration(self, *args, **kwargs):
         self.last_call = (args, kwargs)
 
     def pre_iteration(self, *args, **kwargs):
@@ -121,7 +120,7 @@ def test_args_kwargs_passed_to_iteration_and_pre_post_converged():
 def test_loss_of_base_loss_model_raises_not_implemented():
     module = IterationLossModule()
     with pytest.raises(NotImplementedError):
-        module.iteration_loss(0)
+        module.iteration_loss()
 
 
 def test_loss_model_forward_lowers_iteration_loss():
