@@ -61,9 +61,13 @@ class IterationLossModule(IterationModule):
     function.
 
     This creates an optimizer in the `pre_iteration()`, then for each iteration runs
-    `backward()` on the output from `self.iteration_loss()` and steps the optimizer. The
-    constructor has options for choosing the optimizer to use, as well as an optional
-    learning-rate scheduler; see below.
+    `backward()` on the output from `self.iteration_loss()` and steps the optimizer.
+    This is followed by an optional projection step; see `iteration_projection` below.
+    Note that projection is a very simple way of enforcing constraints, and might not
+    work well with adaptive step optimizers.
+
+    The constructor has options for choosing the optimizer to use, as well as for an
+    optional learning-rate scheduler; see below.
 
     Functions to implement:
       * `iteration_loss(*args, **kwargs)` should return the loss
@@ -82,6 +86,7 @@ class IterationLossModule(IterationModule):
         iteration_lr: float = 1e-3,
         it_optim_kwargs: Optional[Dict[str, Any]] = None,
         it_sched_kwargs: Optional[Dict[str, Any]] = None,
+        iteration_projection: Optional[Callable] = None,
         **kwargs,
     ) -> None:
         """Initialize the module.
@@ -94,6 +99,9 @@ class IterationLossModule(IterationModule):
             that overrides any potential learning rate from `it_optim_kwargs`
         :param it_optim_kwargs: dictionary of keyword arguments to pass to the optimizer
         :param it_sched_kwargs: dictionary of keyword arguments to pass to the scheduler
+        :param iteration_projection: optional projection to perform after each optimizer
+            step; this should be a callable that will be applied to each element of
+            `self.iteration_parameters()` (e.g., `torch.nn.functional.relu`)
         :param kwargs: other keyword arguments are passed to `IterationModule`
         """
         super().__init__(**kwargs)
@@ -108,6 +116,8 @@ class IterationLossModule(IterationModule):
 
         self.iteration_optimizer: torch.optim.Optimizer = None  # type: ignore
         self.iteration_scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None
+
+        self.iteration_projection = iteration_projection
 
     def iteration(self, i: int, *args, **kwargs):
         self.iteration_optimizer.zero_grad()
@@ -137,6 +147,10 @@ class IterationLossModule(IterationModule):
     def post_iteration(self, *args, **kwargs):
         for param in self.iteration_parameters():
             param.requires_grad_(False)
+
+        if self.iteration_projection is not None:
+            for param in self.iteration_parameters():
+                param.data = self.iteration_projection(param.data)
 
         super().post_iteration(*args, **kwargs)
 

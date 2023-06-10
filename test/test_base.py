@@ -55,12 +55,13 @@ class MockLossModule(IterationLossModule):
     def __init__(self, n: int = 5, **kwargs):
         super().__init__(**kwargs)
 
+        torch.manual_seed(42)
         self.n = n
         self.decoy = nn.Linear(2, 3, bias=False)
         self.register_buffer("state", torch.randn(self.n))
 
     def iteration_loss(self, *args, **kwargs) -> torch.Tensor:
-        return ((self.state - torch.ones(self.n)) ** 2).sum()
+        return ((self.state + torch.ones(self.n)) ** 2).sum()
 
     def iteration_parameters(self) -> List[torch.Tensor]:
         return [self.state]  # type: ignore
@@ -180,3 +181,14 @@ def test_loss_model_it_sched_kwargs_passed_to_scheduler():
 
     assert "foo" in mock_sched.call_args.kwargs
     assert mock_sched.call_args.kwargs["foo"] == "bar"
+
+
+def test_loss_model_projection():
+    # make sure we would have some negative elements without a projection
+    module1 = MockLossModule(n=3)
+    module1()
+    assert torch.any(module1.state < 0)  # type: ignore
+
+    module2 = MockLossModule(n=3, iteration_projection=nn.functional.relu)
+    module2()
+    assert torch.all(module2.state >= 0)  # type: ignore
