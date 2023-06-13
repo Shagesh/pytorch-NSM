@@ -191,3 +191,37 @@ def test_loss_model_projection():
     module2 = MockLossModule(n=3, iteration_projection=nn.functional.relu)
     module2()
     assert torch.all(module2.state >= 0)  # type: ignore
+
+
+def test_loss_model_projection_after_every_iteration():
+    # make sure we would have some negative elements without a projection
+    module1 = MockLossModule(n=3)
+    module1()
+    assert torch.any(module1.state < 0)  # type: ignore
+
+    module2 = MockLossModule(n=3, iteration_projection=nn.functional.relu)
+    module2.pre_iteration()
+    module2.iteration()
+    assert torch.all(module2.state >= 0)  # type: ignore
+
+
+def test_pre_post_iteration_toggles_requires_grad_for_it_params():
+    module = MockLossModule()
+    module.pre_iteration()
+    assert module.state.requires_grad
+
+    module.post_iteration()
+    assert not module.state.requires_grad
+
+
+def test_pre_post_iteration_toggles_requires_grad_for_params():
+    module = MockLossModule()
+    params = list(module.parameters())
+    assert len(params) > 0
+    assert params[0].requires_grad
+
+    module.pre_iteration()
+    assert not params[0].requires_grad
+
+    module.post_iteration()
+    assert params[0].requires_grad

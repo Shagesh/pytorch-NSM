@@ -129,11 +129,26 @@ class IterationLossModule(IterationModule):
         if self.iteration_scheduler is not None:
             self.iteration_scheduler.step()
 
+        if self.iteration_projection is not None:
+            with torch.no_grad():
+                for param in self.iteration_parameters():
+                    param.data = self.iteration_projection(param.data)
+
     def pre_iteration(self, *args, **kwargs):
+        """Pre-iteration processing.
+
+        This sets `requires_grad` to `True` for the `iteration_parameters()` and to
+        `False` for the `parameters()`. It also generates an optimizer and a scheduler,
+        if one is requested.
+        """
         super().pre_iteration(*args, **kwargs)
 
+        # iteration parameters require grad...
         for param in self.iteration_parameters():
             param.requires_grad_(True)
+        # ...but other parameters don't
+        for param in self.parameters():
+            param.requires_grad_(False)
 
         self.iteration_optimizer = self.it_construct_optim(
             self.iteration_parameters(), **self.it_optim_kwargs
@@ -145,12 +160,18 @@ class IterationLossModule(IterationModule):
             )
 
     def post_iteration(self, *args, **kwargs):
+        """Post-iteration processing.
+
+        This sets `requires_grad` to `False` for the `iteration_parameters()` and to
+        `True` for the `parameters()`. Note that the state of these parameters before
+        `pre_iteration()` is not checked.
+        """
+        # reset: no grad for iteration parameters...
         for param in self.iteration_parameters():
             param.requires_grad_(False)
-
-        if self.iteration_projection is not None:
-            for param in self.iteration_parameters():
-                param.data = self.iteration_projection(param.data)
+        # ...and yes grad for the others
+        for param in self.parameters():
+            param.requires_grad_(True)
 
         super().post_iteration(*args, **kwargs)
 
