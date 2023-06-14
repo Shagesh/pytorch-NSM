@@ -14,14 +14,16 @@ class IterationModule(nn.Module):
 
         self.iteration(*args, **kwargs)
 
-    Pre- and post-processing can be achieved by implementing `self.pre_iteration()` and
-    `self.post_iteration()`, which are called before the first iteration and after the
-    last, respectively. They are passed the arguments passed to `forward()`:
+    When done iterating, `forward()` returns the output from `self.post_iteration()`.
+    The methods `self.pre_iteration()` and `self.post_iteration()` can also be used to
+    perform any necessary pre- and post-processing, as they are called before the first
+    iteration and after the last, respectively. They are passed the arguments passed to
+    `forward()`:
 
         self.pre_iteration(*args, **kwargs)
         self.post_iteration(*args, **kwargs)
 
-    By default, these do nothing.
+    By default, these do nothing and return nothing.
     """
 
     def __init__(self, max_iterations: int = 1000, **kwargs):
@@ -39,7 +41,7 @@ class IterationModule(nn.Module):
             if self.converged(*args, **kwargs):
                 break
 
-        self.post_iteration(*args, **kwargs)
+        return self.post_iteration(*args, **kwargs)
 
     def iteration(self, *args, **kwargs):
         raise NotImplementedError(
@@ -52,7 +54,7 @@ class IterationModule(nn.Module):
     def pre_iteration(self, *args, **kwargs):
         pass
 
-    def post_iteration(self, *args, **kwargs):
+    def post_iteration(self, *args, **kwargs) -> Any:
         pass
 
 
@@ -159,7 +161,7 @@ class IterationLossModule(IterationModule):
                 self.iteration_optimizer, **self.it_sched_kwargs
             )
 
-    def post_iteration(self, *args, **kwargs):
+    def post_iteration(self, *args, **kwargs) -> Any:
         """Post-iteration processing.
 
         This sets `requires_grad` to `False` for the `iteration_parameters()` and to
@@ -173,7 +175,7 @@ class IterationLossModule(IterationModule):
         for param in self.parameters():
             param.requires_grad_(True)
 
-        super().post_iteration(*args, **kwargs)
+        return super().post_iteration(*args, **kwargs)
 
     def iteration_loss(self, *args, **kwargs):
         raise NotImplementedError(

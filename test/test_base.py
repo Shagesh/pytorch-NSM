@@ -41,9 +41,10 @@ class MockModuleWithPrePost(IterationModule):
         self.n_calls_pre += 1
         self.last_pre_call = (args, kwargs)
 
-    def post_iteration(self, *args, **kwargs):
+    def post_iteration(self, *args, **kwargs) -> str:
         self.n_calls_post += 1
         self.last_post_call = (args, kwargs)
+        return "foobar"
 
     def converged(self, *args, **kwargs) -> bool:
         self.last_conv_call = (args, kwargs)
@@ -64,6 +65,10 @@ class MockLossModule(IterationLossModule):
 
     def iteration_parameters(self) -> List[torch.Tensor]:
         return [self.state]  # type: ignore
+
+    def post_iteration(self, *args, **kwargs) -> str:
+        super().post_iteration(*args, **kwargs)
+        return "foobar"
 
 
 def test_base_inherits_from_module():
@@ -115,6 +120,13 @@ def test_args_kwargs_passed_to_iteration_and_pre_post_converged():
         module.last_conv_call,
     ]:
         assert last == ((2, 3), {"foo": "bar"})
+
+
+def test_forward_returns_output_from_post_iteration():
+    module = MockModuleWithPrePost()
+    ret = module(2)
+
+    assert ret == "foobar"
 
 
 def test_loss_of_base_loss_model_raises_not_implemented():
@@ -225,3 +237,10 @@ def test_pre_post_iteration_toggles_requires_grad_for_params():
 
     module.post_iteration()
     assert params[0].requires_grad
+
+
+def test_loss_model_forward_returns_output_from_post_iteration():
+    module = MockLossModule()
+    ret = module(2)
+
+    assert ret == "foobar"
