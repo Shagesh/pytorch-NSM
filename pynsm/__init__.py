@@ -1,1 +1,2 @@
-from .arch import IterationModule, IterationLossModule, NSM_Conv, Supervised_NSM_Conv
+from .arch import IterationModule, IterationLossModule, SimilarityMatching
+from .arch import NSM_Conv, Supervised_NSM_Conv
