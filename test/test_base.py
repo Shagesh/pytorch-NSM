@@ -59,9 +59,12 @@ class MockLossModule(IterationLossModule):
         self.n = n
         self.decoy = nn.Linear(2, 3, bias=False)
         self.register_buffer("state", torch.randn(self.n))
+        self.loss_history = []
 
     def iteration_loss(self, *args, **kwargs) -> torch.Tensor:
-        return ((self.state + torch.ones(self.n)) ** 2).sum()
+        loss = ((self.state + torch.ones(self.n)) ** 2).sum()
+        self.loss_history.append(loss.item())
+        return loss
 
     def iteration_parameters(self) -> List[torch.Tensor]:
         return [self.state]  # type: ignore
@@ -329,3 +332,15 @@ def test_loss_model_forward_returns_output_from_post_iteration():
     ret = module(2)
 
     assert ret == "foobar"
+
+
+def test_loss_model_updates_iteration_loss():
+    module = MockLossModule()
+    loss_history = []
+
+    module.register_iteration_hook(
+        "iteration", lambda m: loss_history.append(m.last_iteration_loss)
+    )
+    module()
+
+    assert pytest.approx(loss_history) == module.loss_history

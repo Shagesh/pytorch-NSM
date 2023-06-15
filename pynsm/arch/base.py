@@ -115,7 +115,9 @@ class IterationLossModule(IterationModule):
     optional learning-rate scheduler; see below.
 
     Functions to implement:
-      * `iteration_loss(*args, **kwargs)` should return the loss
+      * `iteration_loss(*args, **kwargs)` should return the loss; the output is stored
+        in `self.last_iteration_loss` as a number (i.e. `item()` is called on the tensor
+        output from `iteration_loss()`)
       * `iteration_parameters()` should return a list of parameters to be optimized
         during the iteration
 
@@ -164,6 +166,8 @@ class IterationLossModule(IterationModule):
 
         self.iteration_projection = iteration_projection
 
+        self.last_iteration_loss = None
+
     def iteration(self, *args, **kwargs):
         self.iteration_optimizer.zero_grad()
 
@@ -178,6 +182,8 @@ class IterationLossModule(IterationModule):
             with torch.no_grad():
                 for param in self.iteration_parameters():
                     param.data = self.iteration_projection(param.data)
+
+        self.last_iteration_loss = loss.item()
 
     def pre_iteration(self, *args, **kwargs):
         """Pre-iteration processing.
