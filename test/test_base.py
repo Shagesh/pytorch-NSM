@@ -129,6 +129,91 @@ def test_forward_returns_output_from_post_iteration():
     assert ret == "foobar"
 
 
+def test_pre_hook_called_before_pre_iteration():
+    module = MockModuleWithPrePost()
+    hook_called = [False]
+
+    def hook(m):
+        hook_called[0] = True
+        assert m.last_pre_call is None
+        assert m.last_call is None
+
+    module.register_iteration_hook("pre", hook)
+    module()
+
+    assert hook_called[0]
+
+
+def test_post_hook_called_after_post_iteration():
+    module = MockModuleWithPrePost()
+    hook_called = [False]
+
+    def hook(m):
+        hook_called[0] = True
+        assert m.last_post_call is not None
+
+    module.register_iteration_hook("post", hook)
+    module()
+
+    assert hook_called[0]
+
+
+def test_iteration_hook_called_after_every_iteration():
+    module = MockModuleWithPrePost()
+    n_calls = [0]
+
+    def hook(m):
+        n_calls[0] += 1
+        assert m.last_call is not None
+
+    module.register_iteration_hook("iteration", hook)
+    module()
+
+    assert n_calls[0] == module.max_iterations
+
+
+def test_register_multiple_hooks():
+    module = MockModuleWithPrePost()
+    hooks_called = [False, False]
+
+    def hook1(m):
+        hooks_called[0] = True
+
+    def hook2(m):
+        hooks_called[1] = True
+
+    module.register_iteration_hook("iteration", hook1)
+    module.register_iteration_hook("iteration", hook2)
+    module()
+
+    assert all(hooks_called)
+
+
+def test_iteration_stops_if_iteration_hook_returns_truthful():
+    module = MockModuleWithPrePost()
+    n_calls = [0]
+
+    def hook(m):
+        n_calls[0] += 1
+        return True
+
+    module.register_iteration_hook("iteration", hook)
+    module()
+
+    assert n_calls[0] == 1
+
+
+def test_iteration_idx_updated():
+    n = 13
+    module = MockModule(False, max_iterations=n)
+
+    idxs = []
+    module.register_iteration_hook("iteration", lambda m: idxs.append(m.iteration_idx))
+    module()
+
+    assert idxs == list(range(n))
+
+
 def test_loss_of_base_loss_model_raises_not_implemented():
     module = IterationLossModule()
     with pytest.raises(NotImplementedError):

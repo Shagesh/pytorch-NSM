@@ -2,6 +2,7 @@
 import torch
 from torch import nn
 
+from collections import defaultdict
 from typing import Any, Optional, Dict, List, Union, Callable
 
 
@@ -33,15 +34,49 @@ class IterationModule(nn.Module):
         """
         super().__init__(**kwargs)
         self.max_iterations = max_iterations
+        self.hooks = defaultdict(list)
+        self.iteration_idx = -1
+
+    def register_iteration_hook(self, kind: str, hook: Callable):
+        """Register a hook for the forward iteration.
+
+        Hooks can be assigned for the following events:
+        * pre:          called before `pre_iteration()`
+            signature: `hook(module)`
+        * post:         called after `post_iteration()`
+            signature: `hook(module)`
+        * iteration:    called after every call to `iteration()` (before `converged()`)
+            signature: `hook(module) -> bool`
+            A truthful return value ends the iteration. The iteration index is available
+            in `module.iteration_idx`.
+
+        Multiple hooks can be attached to the same event.
+
+        :param kind: the kind of hook to register
+        :param hook: the function to be called
+        """
+        if kind not in ["pre", "post", "iteration"]:
+            raise ValueError(f"Unknown event type in register_iteration_hook: {kind}")
+
+        self.hooks[kind].append(hook)
 
     def forward(self, *args, **kwargs) -> Any:
+        self.iteration_idx = -1
+
+        self._call_hooks(self.hooks["pre"])
         self.pre_iteration(*args, **kwargs)
         for i in range(self.max_iterations):
+            self.iteration_idx = i
             self.iteration(*args, **kwargs)
+            if self._call_hooks(self.hooks["iteration"], check_output=True):
+                break
             if self.converged(*args, **kwargs):
                 break
 
-        return self.post_iteration(*args, **kwargs)
+        retval = self.post_iteration(*args, **kwargs)
+        self._call_hooks(self.hooks["post"])
+
+        return retval
 
     def iteration(self, *args, **kwargs):
         raise NotImplementedError(
@@ -56,6 +91,14 @@ class IterationModule(nn.Module):
 
     def post_iteration(self, *args, **kwargs) -> Any:
         pass
+
+    def _call_hooks(self, hooks: List[Callable], check_output: bool = False) -> bool:
+        for hook in hooks:
+            retval = hook(self)
+            if check_output and retval:
+                return True
+
+        return False
 
 
 class IterationLossModule(IterationModule):
