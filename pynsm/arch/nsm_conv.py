@@ -10,6 +10,81 @@ from torch import nn
 
 import matplotlib.pyplot as plt
 
+from typing import List, Optional, Union
+
+from .base import IterationLossModule
+
+
+class SimilarityMatching(IterationLossModule):
+    """Similarity matching circuit."""
+
+    def __init__(
+        self,
+        encoder: nn.Module,
+        out_channels: int,
+        tau: float = 0.1,
+        max_iterations: int = 40,
+        **kwargs,
+    ):
+        """Initialize the similarity matching circuit.
+
+        :param encoder: module to use for encoding the inputs
+        :param out_channels: number of output channels
+        :param tau: factor by which to divide the competitor's learning rate
+        :param max_iterations: maximum number of iterations to run in `forward()`
+        :param **kwargs: additional keyword arguments passed to `IterationLossModule`
+        """
+        super().__init__(max_iterations=max_iterations, **kwargs)
+
+        self.encoder = encoder
+        self.out_channels = out_channels
+        self.tau = tau
+
+        # XXX should probably ensure the device (and data types?) match
+        self.competitor = nn.Linear(out_channels, out_channels, bias=False)
+        torch.nn.init.eye_(self.competitor.weight)
+
+        # make sure we maximize with respect to competitor weight...
+        # ...and implement the learning rate ratio
+        scaling = -1.0 / tau
+        self.competitor.weight.register_hook(lambda g: g * scaling)
+
+        self.y: torch.Tensor
+        self.register_buffer("y", torch.tensor([]))
+
+    def pre_iteration(self, x: torch.Tensor):
+        self._Wx = self.encoder(x).detach()
+        self.y = torch.zeros_like(self._Wx)
+        super().pre_iteration(x)
+
+    def iteration_loss(self, x: torch.Tensor):
+        return self.loss(None, self.y)  # type: ignore
+
+    def post_iteration(self, x: torch.Tensor):
+        super().post_iteration(x)
+        self._Wx = None
+
+        return self.y.detach()
+
+    def iteration_parameters(self) -> List[torch.Tensor]:
+        return [self.y]
+
+    def loss(self, x: torch.Tensor, y: torch.Tensor):
+        if x is not None:
+            Wx = self.encoder(x)
+        else:
+            Wx = self._Wx
+
+        scaling_factor = y.shape[1]
+        yWx = (y * Wx).mean() * scaling_factor
+
+        My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, y)
+        yMy = (y * My).mean() * scaling_factor
+
+        M_reg = (self.competitor.weight**2).sum()
+        loss = -2 * yWx + yMy - 0.5 * M_reg
+        return loss
+
 
 class NSM_Conv(nn.Module):
     def __init__(
