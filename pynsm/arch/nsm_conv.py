@@ -24,6 +24,7 @@ class SimilarityMatching(IterationLossModule):
         out_channels: int,
         tau: float = 0.1,
         max_iterations: int = 40,
+        regularization: str = "weight",
         **kwargs,
     ):
         """Initialize the similarity matching circuit.
@@ -32,6 +33,13 @@ class SimilarityMatching(IterationLossModule):
         :param out_channels: number of output channels
         :param tau: factor by which to divide the competitor's learning rate
         :param max_iterations: maximum number of iterations to run in `forward()`
+        :param regularization: type of encoder regularization to use; this can be
+            "weight":   use the encoder's parameters; an exception is raised in the
+                        ambiguous case when`encoder.parameters()` has length > 1
+            "whiten":   use a regularizer that encourages whitening XXX explain
+            "none":     do not use regularization for the encoder; most useful to allow
+                        for custom regularization, since lack of regularization leads to
+                        unstable dynamics in many cases
         :param **kwargs: additional keyword arguments passed to `IterationLossModule`
         """
         super().__init__(max_iterations=max_iterations, **kwargs)
@@ -39,6 +47,10 @@ class SimilarityMatching(IterationLossModule):
         self.encoder = encoder
         self.out_channels = out_channels
         self.tau = tau
+        self.regularization = regularization
+
+        if self.regularization not in ["weight", "whiten", "none"]:
+            raise ValueError(f"Unknown regularization {self.regularization}")
 
         # XXX should probably ensure the device (and data types?) match
         self.competitor = nn.Linear(out_channels, out_channels, bias=False)
@@ -71,10 +83,34 @@ class SimilarityMatching(IterationLossModule):
         return [self.y]
 
     def loss(self, x: torch.Tensor, y: torch.Tensor):
-        loss = self._loss_no_reg(self.encoder(x), y)
+        Wx = self.encoder(x)
+        loss = self._loss_no_reg(Wx, y)
 
+        # competitor regularization
         M_reg = (self.competitor.weight**2).sum()
         loss -= 0.5 * M_reg
+
+        # encoder regularization
+        if self.regularization == "whiten":
+            # this needs to match the scaling from _loss_no_reg!
+            scaling_factor = y.shape[1]
+            loss += (Wx**2).mean() * scaling_factor
+        elif self.regularization == "weight":
+            encoder_params = list(self.encoder.parameters())
+            if len(encoder_params) == 0:
+                raise ValueError(
+                    "Cannot use weight regularizer because encoder has no parameters"
+                )
+            if len(encoder_params) > 1:
+                raise ValueError(
+                    "Ambiguity in weight regularizer as encoder has more "
+                    "than one parameter tensor"
+                )
+            weight = encoder_params[0]
+            loss += (weight**2).sum()
+        elif self.regularization != "none":
+            raise ValueError(f"Unknown regularization {self.regularization}")
+
         return loss
 
     def _loss_no_reg(self, Wx: torch.Tensor, y: torch.Tensor):
