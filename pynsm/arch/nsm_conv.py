@@ -58,7 +58,8 @@ class SimilarityMatching(IterationLossModule):
         super().pre_iteration(x)
 
     def iteration_loss(self, x: torch.Tensor):
-        return self.loss(None, self.y)  # type: ignore
+        assert self._Wx is not None
+        return self._loss_no_reg(self._Wx, self.y)
 
     def post_iteration(self, x: torch.Tensor):
         super().post_iteration(x)
@@ -70,19 +71,25 @@ class SimilarityMatching(IterationLossModule):
         return [self.y]
 
     def loss(self, x: torch.Tensor, y: torch.Tensor):
-        if x is not None:
-            Wx = self.encoder(x)
-        else:
-            Wx = self._Wx
+        loss = self._loss_no_reg(self.encoder(x), y)
 
+        M_reg = (self.competitor.weight**2).sum()
+        loss -= 0.5 * M_reg
+        return loss
+
+    def _loss_no_reg(self, Wx: torch.Tensor, y: torch.Tensor):
+        """Compute the part of the loss without the regularization terms.
+
+        :param Wx: encoded input, `self.encoder(x)`
+        :param y: output (after iteration converges)
+        """
         scaling_factor = y.shape[1]
         yWx = (y * Wx).mean() * scaling_factor
 
         My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, y)
         yMy = (y * My).mean() * scaling_factor
 
-        M_reg = (self.competitor.weight**2).sum()
-        loss = -2 * yWx + yMy - 0.5 * M_reg
+        loss = -2 * yWx + yMy
         return loss
 
 
