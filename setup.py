@@ -25,7 +25,6 @@ setup(
         "setuptools",
         "numpy",
         "scipy",
-        "pandas",
         "tqdm",
         "matplotlib",
         "seaborn",
