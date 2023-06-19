@@ -130,7 +130,7 @@ class IterationLossModule(IterationModule):
         self,
         iteration_optimizer: Callable = torch.optim.SGD,  # type: ignore
         iteration_scheduler: Optional[Callable] = None,
-        iteration_lr: float = 1e-3,
+        iteration_lr: float = 1.0,
         it_optim_kwargs: Optional[Dict[str, Any]] = None,
         it_sched_kwargs: Optional[Dict[str, Any]] = None,
         iteration_projection: Optional[Callable] = None,

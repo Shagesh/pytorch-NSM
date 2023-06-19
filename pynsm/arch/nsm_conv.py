@@ -70,7 +70,8 @@ class SimilarityMatching(IterationLossModule):
 
     def iteration_loss(self, x: torch.Tensor):
         assert self._Wx is not None
-        return self._loss_no_reg(self._Wx, self.y, "mean")
+        loss = self._loss_no_reg(self._Wx, self.y, "sum")
+        return loss / 4
 
     def post_iteration(self, x: torch.Tensor):
         super().post_iteration(x)
@@ -116,13 +117,17 @@ class SimilarityMatching(IterationLossModule):
 
         :param Wx: encoded input, `self.encoder(x)`
         :param y: output (after iteration converges)
+        :param reduction: "mean" or "sum"
         """
-        yWx = (y * Wx).mean()
-
         My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, y)
-        yMy = (y * My).mean()
+        yWx = (y * Wx).sum()
+        yMy = (y * My).sum()
 
         loss = -4 * yWx + 2 * yMy
+
+        if reduction == "mean":
+            loss /= torch.numel(y)
+
         return loss
 
 
