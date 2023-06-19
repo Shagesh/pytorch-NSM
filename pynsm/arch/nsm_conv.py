@@ -61,8 +61,7 @@ class SimilarityMatching(IterationLossModule):
         scaling = -1.0 / tau
         self.competitor.weight.register_hook(lambda g: g * scaling)
 
-        self.y: torch.Tensor
-        self.register_buffer("y", torch.tensor([]))
+        self.y = torch.tensor([])
 
     def pre_iteration(self, x: torch.Tensor):
         self._Wx = self.encoder(x).detach()
