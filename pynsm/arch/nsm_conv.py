@@ -70,7 +70,7 @@ class SimilarityMatching(IterationLossModule):
 
     def iteration_loss(self, x: torch.Tensor):
         assert self._Wx is not None
-        return self._loss_no_reg(self._Wx, self.y)
+        return self._loss_no_reg(self._Wx, self.y, "mean")
 
     def post_iteration(self, x: torch.Tensor):
         super().post_iteration(x)
@@ -83,17 +83,16 @@ class SimilarityMatching(IterationLossModule):
 
     def loss(self, x: torch.Tensor, y: torch.Tensor):
         Wx = self.encoder(x)
-        loss = self._loss_no_reg(Wx, y)
+        loss = self._loss_no_reg(Wx, y, "mean")
 
         # competitor regularization
-        M_reg = (self.competitor.weight**2).sum()
-        loss -= 0.5 * M_reg
+        M_reg = (self.competitor.weight**2).sum() / y.shape[1]
+        loss -= M_reg
 
         # encoder regularization
         if self.regularization == "whiten":
             # this needs to match the scaling from _loss_no_reg!
-            scaling_factor = y.shape[1]
-            loss += (Wx**2).mean() * scaling_factor
+            loss += 2 * (Wx**2).mean()
         elif self.regularization == "weight":
             encoder_params = list(self.encoder.parameters())
             if len(encoder_params) == 0:
@@ -106,25 +105,24 @@ class SimilarityMatching(IterationLossModule):
                     "than one parameter tensor"
                 )
             weight = encoder_params[0]
-            loss += (weight**2).sum()
+            loss += (weight**2).sum() * (2.0 / y.shape[1])
         elif self.regularization != "none":
             raise ValueError(f"Unknown regularization {self.regularization}")
 
         return loss
 
-    def _loss_no_reg(self, Wx: torch.Tensor, y: torch.Tensor):
+    def _loss_no_reg(self, Wx: torch.Tensor, y: torch.Tensor, reduction: str):
         """Compute the part of the loss without the regularization terms.
 
         :param Wx: encoded input, `self.encoder(x)`
         :param y: output (after iteration converges)
         """
-        scaling_factor = y.shape[1]
-        yWx = (y * Wx).mean() * scaling_factor
+        yWx = (y * Wx).mean()
 
         My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, y)
-        yMy = (y * My).mean() * scaling_factor
+        yMy = (y * My).mean()
 
-        loss = -2 * yWx + yMy
+        loss = -4 * yWx + 2 * yMy
         return loss
 
 
