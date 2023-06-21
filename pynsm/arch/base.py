@@ -124,6 +124,11 @@ class IterationLossModule(IterationModule):
     Note that typically the `iteration_parameters()` should *not* be included in the
     module's `parameters()`, but should potentially be saved as part of the
     `state_dict`, so it is recommended that they be registered as buffers.
+
+    The optimization and scheduling features of the class can be used in combination
+    with manually calculated gradients by overriding
+
+        iteration_set_gradients(*args, **kwargs)
     """
 
     def __init__(
@@ -169,10 +174,7 @@ class IterationLossModule(IterationModule):
         self.last_iteration_loss = None
 
     def iteration(self, *args, **kwargs):
-        self.iteration_optimizer.zero_grad()
-
-        loss = self.iteration_loss(*args, **kwargs)
-        loss.backward()
+        self.iteration_set_gradients(*args, **kwargs)
 
         self.iteration_optimizer.step()
         if self.iteration_scheduler is not None:
@@ -182,8 +184,6 @@ class IterationLossModule(IterationModule):
             with torch.no_grad():
                 for param in self.iteration_parameters():
                     param.data = self.iteration_projection(param.data)
-
-        self.last_iteration_loss = loss.item()
 
     def pre_iteration(self, *args, **kwargs):
         """Pre-iteration processing.
@@ -225,6 +225,14 @@ class IterationLossModule(IterationModule):
             param.requires_grad_(True)
 
         return super().post_iteration(*args, **kwargs)
+
+    def iteration_set_gradients(self, *args, **kwargs):
+        self.iteration_optimizer.zero_grad()
+
+        loss = self.iteration_loss(*args, **kwargs)
+        loss.backward()
+
+        self.last_iteration_loss = loss.item()
 
     def iteration_loss(self, *args, **kwargs):
         raise NotImplementedError(

@@ -344,3 +344,21 @@ def test_loss_model_updates_iteration_loss():
     module()
 
     assert pytest.approx(loss_history) == module.loss_history
+
+
+def test_override_backward_with_iteration_set_gradients():
+    class MockLossModuleSetGrads(IterationLossModule):
+        def __init__(self):
+            super().__init__(iteration_lr=0.1)
+            self.y = torch.zeros(5)
+
+        def iteration_set_gradients(self, *args, **kwargs):
+            self.y.grad = 1.0 * torch.arange(5)
+
+        def iteration_parameters(self) -> List[torch.Tensor]:
+            return [self.y]  # type: ignore
+
+    module = MockLossModuleSetGrads()
+    module()
+
+    assert torch.allclose(module.y.grad, 1.0 * torch.arange(5))  # type: ignore
