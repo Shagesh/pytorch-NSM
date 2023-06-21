@@ -53,7 +53,7 @@ class MockModuleWithPrePost(IterationModule):
 
 class MockLossModule(IterationLossModule):
     def __init__(self, n: int = 5, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(iteration_lr=0.1, **kwargs)
 
         torch.manual_seed(42)
         self.n = n
