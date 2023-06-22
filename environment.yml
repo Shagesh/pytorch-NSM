@@ -8,11 +8,9 @@ channels:
 dependencies:
     - python=3.9
     - pip
-    - black
     - pytest
     - numpy
     - scipy
-    - pandas
     - tqdm
     - matplotlib
     - seaborn

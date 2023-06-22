@@ -15,11 +15,9 @@ requirements:
   run:
     - python
     - pip
-    - black
     - pytest
     - numpy
     - scipy
-    - pandas
     - tqdm
     - matplotlib
     - seaborn
