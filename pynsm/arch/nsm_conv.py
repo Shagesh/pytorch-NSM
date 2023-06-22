@@ -68,7 +68,17 @@ class SimilarityMatching(IterationLossModule):
         self.y = torch.zeros_like(self._Wx)
         super().pre_iteration(x)
 
-    def iteration_loss(self, x: torch.Tensor):
+    def iteration_set_gradients(self, x: torch.Tensor):
+        with torch.no_grad():
+            My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, self.y)
+            self.y.grad = My - self._Wx
+
+    def iteration_loss(self, x: torch.Tensor) -> torch.Tensor:
+        """Loss function associated with the iteration.
+
+        This is not actually used by the iteration, which instead uses manually
+        calculated gradients (for efficiency).
+        """
         assert self._Wx is not None
         loss = self._loss_no_reg(self._Wx, self.y, "sum")
         return loss / 4
