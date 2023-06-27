@@ -45,7 +45,6 @@ class SimilarityMatching(IterationLossModule):
         if self.regularization not in ["weight", "whiten", "none"]:
             raise ValueError(f"Unknown regularization {self.regularization}")
 
-        # XXX should probably ensure the device (and data types?) match
         self.competitor = nn.Linear(out_channels, out_channels, bias=False)
         torch.nn.init.eye_(self.competitor.weight)
 
