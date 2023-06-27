@@ -1,16 +1,9 @@
 """Define a convolutional NSM module."""
 
-import math
-
-import numpy as np
-
 import torch
-import torch.nn.functional as F
 from torch import nn
 
-import matplotlib.pyplot as plt
-
-from typing import List, Optional, Union
+from typing import List
 
 from .base import IterationLossModule
 
