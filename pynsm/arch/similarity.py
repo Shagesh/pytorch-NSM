@@ -156,7 +156,7 @@ class MultiSimilarityMatching(IterationLossModule):
         """
         super().__init__(max_iterations=max_iterations, **kwargs)
 
-        self.encoders = encoders
+        self.encoders = nn.ModuleList(encoders)
         self.out_channels = out_channels
         self.tau = tau
         self.regularization = regularization
@@ -177,23 +177,24 @@ class MultiSimilarityMatching(IterationLossModule):
     def _encode(self, *args: torch.Tensor) -> Sequence[torch.Tensor]:
         Wx = []
         for x, encoder in zip(args, self.encoders):
-            Wx.append(encoder(x).detach())
-            if len(Wx) > 1:
-                assert Wx[-1].shape == Wx[0].shape
+            Wx.append(encoder(x))
+            assert Wx[-1].shape == Wx[0].shape
 
         return Wx
 
     def pre_iteration(self, *args: torch.Tensor):
         assert len(args) == len(self.encoders)
 
-        self._Wx = self._encode(*args)
-        self.y = torch.zeros_like(self._Wx[0])
+        Wx = self._encode(*args)
+        self._Wx = [_.detach() for _ in Wx]
+        self._Wx_sum = sum(self._Wx)
+        self.y = torch.zeros_like(Wx[0])
         super().pre_iteration(*args)
 
     def iteration_set_gradients(self, *args: torch.Tensor):
         with torch.no_grad():
             My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, self.y)
-            self.y.grad = My - sum(self._Wx)  # type: ignore
+            self.y.grad = My - self._Wx_sum
 
     def iteration_loss(self, *args: torch.Tensor) -> torch.Tensor:
         """Loss function associated with the iteration.
@@ -208,6 +209,7 @@ class MultiSimilarityMatching(IterationLossModule):
     def post_iteration(self, *args: torch.Tensor):
         super().post_iteration(*args)
         self._Wx = None
+        self._Wx_sum = None
 
         return self.y.detach()
 
