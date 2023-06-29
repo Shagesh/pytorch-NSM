@@ -144,8 +144,10 @@ class MultiSimilarityMatching(IterationLossModule):
         :param tau: factor by which to divide the competitor's learning rate
         :param max_iterations: maximum number of iterations to run in `forward()`
         :param regularization: type of encoder regularization to use; this can be
-            "weight":   use the encoder's parameters; an exception is raised in the
-                        ambiguous case when`encoder.parameters()` has length > 1
+            "weight":   use the encoders' parameters; regularization is added for all
+                        the tensors returned by `encoder.parameters()` for each
+                        `encoder`, as long as those tensors are trainable (i.e.,
+                        `requires_grad` is true)
             "whiten":   use a regularizer that encourages whitening XXX explain
             "none":     do not use regularization for the encoder; most useful to allow
                         for custom regularization, since lack of regularization leads to
@@ -230,19 +232,9 @@ class MultiSimilarityMatching(IterationLossModule):
                 loss += 2 * (crt_Wx**2).mean()
         elif self.regularization == "weight":
             for encoder in self.encoders:
-                encoder_params = list(encoder.parameters())
-                if len(encoder_params) == 0:
-                    raise ValueError(
-                        "Cannot use weight regularizer because one encoder "
-                        "has no parameters"
-                    )
-                if len(encoder_params) > 1:
-                    raise ValueError(
-                        "Ambiguity in weight regularizer as one encoder has more "
-                        "than one parameter tensor"
-                    )
-                weight = encoder_params[0]
-                loss += (weight**2).sum() * (2.0 / y.shape[1])
+                encoder_params = [_ for _ in encoder.parameters() if _.requires_grad]
+                for weight in encoder_params:
+                    loss += (weight**2).sum() * (2.0 / y.shape[1])
         elif self.regularization != "none":
             raise ValueError(f"Unknown regularization {self.regularization}")
 
