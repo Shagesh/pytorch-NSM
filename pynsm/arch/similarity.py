@@ -178,7 +178,6 @@ class MultiSimilarityMatching(IterationLossModule):
         Wx = []
         for x, encoder in zip(args, self.encoders):
             Wx.append(encoder(x))
-            assert Wx[-1].shape == Wx[0].shape
 
         return Wx
 
@@ -187,7 +186,12 @@ class MultiSimilarityMatching(IterationLossModule):
 
         Wx = self._encode(*args)
         self._Wx = [_.detach() for _ in Wx]
-        self._Wx_sum = sum(self._Wx)
+
+        Wx_sum = self._Wx[0]
+        for w in self._Wx[1:]:
+            Wx_sum += w
+        self._Wx_sum = Wx_sum
+
         self.y = torch.zeros_like(Wx[0])
         super().pre_iteration(*args)
 
