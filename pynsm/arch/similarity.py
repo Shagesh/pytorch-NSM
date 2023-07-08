@@ -3,7 +3,7 @@
 import torch
 from torch import nn
 
-from typing import List, Sequence, Tuple
+from typing import List, Sequence, Tuple, Optional
 
 from .base import IterationLossModule
 
@@ -21,6 +21,9 @@ class MultiSimilarityMatching(IterationLossModule):
         **kwargs,
     ):
         """Initialize the supervised similarity matching circuit.
+
+        Some of the encoders can be skipped during the `forward()` call either by
+        including fewer arguments than `len(encoders)` or by setting some to `None`.
 
         :param encoders: modules to use for encoding the inputs
         :param out_channels: number of output channels
@@ -57,14 +60,15 @@ class MultiSimilarityMatching(IterationLossModule):
 
         self.y = torch.tensor([])
 
-    def _encode(self, *args: torch.Tensor) -> Sequence[torch.Tensor]:
+    def _encode(self, *args: Optional[torch.Tensor]) -> Sequence[torch.Tensor]:
         Wx = []
         for x, encoder in zip(args, self.encoders):
-            Wx.append(encoder(x))
+            if x is not None:
+                Wx.append(encoder(x))
 
         return Wx
 
-    def pre_iteration(self, *args: torch.Tensor):
+    def pre_iteration(self, *args: Optional[torch.Tensor]):
         assert len(args) == len(self.encoders)
 
         Wx = self._encode(*args)
@@ -78,12 +82,12 @@ class MultiSimilarityMatching(IterationLossModule):
         self.y = torch.zeros_like(Wx[0])
         super().pre_iteration(*args)
 
-    def iteration_set_gradients(self, *args: torch.Tensor):
+    def iteration_set_gradients(self, *args: Optional[torch.Tensor]):
         with torch.no_grad():
             My = torch.einsum("ij,bj... -> bi...", self.competitor.weight, self.y)
             self.y.grad = My - self._Wx_sum
 
-    def iteration_loss(self, *args: torch.Tensor) -> torch.Tensor:
+    def iteration_loss(self, *args: Optional[torch.Tensor]) -> torch.Tensor:
         """Loss function associated with the iteration.
 
         This is not actually used by the iteration, which instead uses manually
@@ -93,7 +97,7 @@ class MultiSimilarityMatching(IterationLossModule):
         loss = self._loss_no_reg(self._Wx, self.y, "sum")
         return loss / 4
 
-    def post_iteration(self, *args: torch.Tensor):
+    def post_iteration(self, *args: Optional[torch.Tensor]):
         super().post_iteration(*args)
         self._Wx = None
         self._Wx_sum = None
@@ -103,9 +107,11 @@ class MultiSimilarityMatching(IterationLossModule):
     def iteration_parameters(self) -> List[torch.Tensor]:
         return [self.y]
 
-    def loss(self, *args: torch.Tensor):
+    def loss(self, *args: Optional[torch.Tensor]):
         y = args[-1]
         args = args[:-1]
+
+        assert y is not None
 
         Wx = self._encode(*args)
         loss = self._loss_no_reg(Wx, y, "mean")
