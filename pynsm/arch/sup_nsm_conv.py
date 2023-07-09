@@ -84,7 +84,7 @@ class Supervised_NSM_Conv(nn.Module):
         ).to(device)
 
         u = torch.zeros(Wx.size()).to(device)
-        y = torch.zeros(Wx.size()).to(device)
+        y = torch.zeros(Wx.size()).to(device, dtype=x.dtype)
 
         if label is not None:
             Wlabel = self.encoder_labels(label).detach()
