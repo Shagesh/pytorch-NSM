@@ -105,7 +105,7 @@ class MultiSimilarityMatching(IterationLossModule):
         loss = self._loss_no_reg(self._Wx, self.y, "sum")
         return loss / 4
 
-    def post_iteration(self, *args: Optional[torch.Tensor]):
+    def post_iteration(self, *args: Optional[torch.Tensor]) -> torch.Tensor:
         super().post_iteration(*args)
         self._Wx = None
         self._Wx_sum = None
@@ -115,7 +115,7 @@ class MultiSimilarityMatching(IterationLossModule):
     def iteration_parameters(self) -> List[torch.Tensor]:
         return [self.y]
 
-    def loss(self, *args: Optional[torch.Tensor]):
+    def loss(self, *args: Optional[torch.Tensor]) -> torch.Tensor:
         y = args[-1]
         args = args[:-1]
 
