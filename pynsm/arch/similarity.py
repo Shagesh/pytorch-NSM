@@ -201,10 +201,11 @@ class SupervisedSimilarityMatching(MultiSimilarityMatching):
 
         This is a wrapper that uses `MultiSimilarityMatching` with two encoders,
         `self.encoders == [encoder, label_encoder]`. The `label_encoder` is generated
-        internally to map one-hot labels to a one-dimensional output of size
-        `out_channels`. The `forward()` iteration is adapted to extend the output of the
-        `label_encoder` to the same shape as the output from the `encoder()`, so it can
-        be used in the similarity matching objective.
+        internally to map *floating-point* one-hot labels (which is what `forward()`
+        expects) to a one-dimensional output of size `out_channels`. The `forward()`
+        iteration is adapted to extend the output of the `label_encoder` to the same
+        shape as the output from the `encoder()`, so it can be used in the similarity
+        matching objective.
 
         Note that by default `"whiten"` regularization is used for the label encoder and
         `"weight"` regularization for the input encoder.
