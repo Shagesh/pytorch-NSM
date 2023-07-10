@@ -327,6 +327,19 @@ def test_pre_post_iteration_toggles_requires_grad_for_params():
     assert params[0].requires_grad
 
 
+def test_pre_post_iteration_resets_requires_grad_for_params_to_what_it_was():
+    module = MockLossModule()
+    params = list(module.parameters())
+    assert len(params) > 0
+    params[0].requires_grad_(False)
+
+    module.pre_iteration()
+    assert not params[0].requires_grad
+
+    module.post_iteration()
+    assert not params[0].requires_grad
+
+
 def test_loss_model_forward_returns_output_from_post_iteration():
     module = MockLossModule()
     ret = module(2)

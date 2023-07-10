@@ -198,8 +198,11 @@ class IterationLossModule(IterationModule):
         for param in self.iteration_parameters():
             param.requires_grad_(True)
         # ...but other parameters don't
+        grad_state = []
         for param in self.parameters():
+            grad_state.append(param.requires_grad)
             param.requires_grad_(False)
+        self._pre_requires_grad_state = grad_state
 
         self.iteration_optimizer = self.it_construct_optim(
             self.iteration_parameters(), **self.it_optim_kwargs
@@ -214,15 +217,14 @@ class IterationLossModule(IterationModule):
         """Post-iteration processing.
 
         This sets `requires_grad` to `False` for the `iteration_parameters()` and to
-        `True` for the `parameters()`. Note that the state of these parameters before
-        `pre_iteration()` is not checked.
+        whatever it was before the iteration for the `parameters()`.
         """
         # reset: no grad for iteration parameters...
         for param in self.iteration_parameters():
             param.requires_grad_(False)
-        # ...and yes grad for the others
-        for param in self.parameters():
-            param.requires_grad_(True)
+        # ...and reset grad for the others
+        for param, old_state in zip(self.parameters(), self._pre_requires_grad_state):
+            param.requires_grad_(old_state)
 
         return super().post_iteration(*args, **kwargs)
 

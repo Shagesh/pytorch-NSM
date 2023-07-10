@@ -15,18 +15,11 @@ requirements:
   run:
     - python
     - pip
-    - pytest
     - numpy
-    - scipy
     - tqdm
-    - matplotlib
-    - seaborn
     - pytorch
     - torchvision
     - scikit-learn
-    - ipykernel
-    - ipywidgets>=7.0,<8.0
-    - jupyter
 
 about:
   home: https://github.com/Shagesh/pytorch-NSM
