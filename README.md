@@ -1,5 +1,8 @@
 # Non-negative similarity matching in PyTorch
 
+[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-360/)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 This is an implementation of non-negative similarity matching (NSM) for PyTorch focusing on ease of use, extensibility, and speed.
 
 ## Table of Contents
@@ -23,6 +26,14 @@ Next, create a new environment and install the necessary pre-requisites using
 conda env create -f environment.yml
 ```
 
+for using the CPU or
+
+```sh
+conda env create -f environment-cuda.yml
+```
+
+for using an NVIDIA GPU. Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
+
 Finally, activate the environment and install the `pynsm` package:
 
 ```sh
@@ -30,13 +41,15 @@ conda activate pynsm
 pip install -e .
 ```
 
-The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
+The `-e` marks this as an "editable" install — this means any updates to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
+
+Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
 
 ### Using `venv`
 
-**TODO:** explain how not to use the system Python.
+Before creating a new virtual environment, it is best to ensure you're not using the system version of Python — this is often badly out of date. Some options for doing this are outlined in [The Hitchhiker's Guide to Python](https://docs.python-guide.org/starting/installation/#installation-guides), although many options exist. One advantage of using `conda` is that this is done for you.
 
-Create a new virtual environment by running the following command in a terminal inside the main folder of the repository:
+Once you have a proper Python install, create a new virtual environment by running the following command in a terminal inside the main folder of the repository:
 
 ```sh
 python -m venv env
@@ -49,6 +62,15 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+To use an NVIDIA GPU, run
+
+```sh
+source env/bin/activate
+pip install -r requirements-cuda.txt
+```
+
+Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
+
 Finally, install the `pynsm` package:
 
 ```sh
@@ -56,6 +78,8 @@ pip install -e .
 ```
 
 The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
+
+Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
 
 ## Example Usage
 
@@ -81,14 +105,7 @@ The pre-trained network is used in a supervised fashion to perform classificatio
 
 ### Supervised NSM
 
-The second part of the code introduces the `Supervised_NSM_Conv` class, which implements supervised learning. It includes additional functionality for handling labeled data during training.
-
-- There is an additional encoder for the labels, `encoder_labels`, which processes the label information.
-- The forward pass includes the labels as input and incorporates them into the computation.
-- The loss function considers the label information in addition to the data and updates the loss accordingly.
-- The training method also incorporates the labels during backpropagation and weight updates.
-
-The `Supervised_NSM_Conv` class also includes additional methods for pooling the output and visualizing the learned features.
+The code also introduces a module called `SupervisedSimilarityMatching` class, which implements supervised learning. It includes additional functionality for handling labeled data during training. It is a special case of `MultiSimilarityMatching`, which attempts to maximize the similarity between the circuit's output and multiple inputs.
 
 ## Questions?
 
