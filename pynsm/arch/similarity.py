@@ -187,6 +187,10 @@ class SimilarityMatching(MultiSimilarityMatching):
         """
         super().__init__(encoders=[encoder], out_channels=out_channels, **kwargs)
 
+    @property
+    def encoder(self) -> nn.Module:
+        return self.encoders[0]
+
 
 class SupervisedSimilarityMatching(MultiSimilarityMatching):
     """Supervised similarity matching circuit for classification."""
