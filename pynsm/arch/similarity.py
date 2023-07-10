@@ -176,7 +176,7 @@ class MultiSimilarityMatching(IterationLossModule):
 class SimilarityMatching(MultiSimilarityMatching):
     """Similarity matching circuit."""
 
-    def __init__(self, out_channels: int, encoder: nn.Module, **kwargs):
+    def __init__(self, encoder: nn.Module, out_channels: int, **kwargs):
         """Initialize the similarity matching circuit.
 
         This is a thin wrapper around `MultiSimilarityMatching` using a single target.
