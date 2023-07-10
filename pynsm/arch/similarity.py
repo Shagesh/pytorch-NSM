@@ -160,9 +160,12 @@ class MultiSimilarityMatching(IterationLossModule):
 
         loss = 2 * yMy
 
-        for crt_Wx in Wx:
-            crt_yWx = (y * crt_Wx).sum()
-            loss -= 4 * crt_yWx
+        if len(Wx) > 0:
+            Wx_sum = Wx[0]
+            for crt_Wx in Wx[1:]:
+                Wx_sum += crt_Wx
+
+            loss -= 4 * (y * Wx_sum).sum()
 
         if reduction == "mean":
             loss /= torch.numel(y)
