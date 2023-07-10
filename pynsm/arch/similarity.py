@@ -180,7 +180,6 @@ class SimilarityMatching(MultiSimilarityMatching):
 
         :param encoder: module to use for encoding the inputs
         :param out_channels: number of output channels
-        :param *args: additional positional arguments go to `MultiSimilarityMatching`
         :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
         """
         super().__init__(encoders=[encoder], out_channels=out_channels, **kwargs)
@@ -214,7 +213,6 @@ class SupervisedSimilarityMatching(MultiSimilarityMatching):
         :param num_classes: number of classes for classification
         :param out_channels: number of output channels
         :param label_bias: set to true to include a bias term in the label encoder
-        :param *args: additional positional arguments go to `MultiSimilarityMatching`
         :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
         """
         label_encoder = nn.Linear(num_classes, out_channels, bias=label_bias)
