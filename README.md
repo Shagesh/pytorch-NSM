@@ -1,6 +1,6 @@
 # Non-negative similarity matching in PyTorch
 
-[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-green.svg)](https://www.python.org/downloads/release/python-380/)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 This is an implementation of non-negative similarity matching (NSM) for PyTorch focusing on ease of use, extensibility, and speed.
@@ -12,7 +12,9 @@ This is an implementation of non-negative similarity matching (NSM) for PyTorch 
 - [Features](#features)
 - [Questions?](#questions)
 
-## Installation
+## Installation (development)
+
+These instructions are for development use (i.e., if you want to make changes to the package). Instructions for users will be added soon.
 
 It is strongly recommended to use a virtual environment when working with this code. The installation instructions below include the commands for creating the virtual environment, using either `conda` (recommended) or `venv`.
 
@@ -20,30 +22,21 @@ It is strongly recommended to use a virtual environment when working with this c
 
 If you do not have `conda` installed, the easiest way to get started is with [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Follow the installation instructions for your system.
 
-Next, create a new environment and install the necessary pre-requisites using
+Next, create a new environment and install for CPU using
 
 ```sh
 conda env create -f environment.yml
 ```
 
-for using the CPU or
+For using an NVIDIA GPU run
 
 ```sh
 conda env create -f environment-cuda.yml
 ```
 
-for using an NVIDIA GPU. Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
+Note that most Macs do not have an NVIDIA GPU, so you should use the first invocation shown above. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration (the installation procedure remains unchanged).
 
-Finally, activate the environment and install the `pynsm` package:
-
-```sh
-conda activate pynsm
-pip install -e .
-```
-
-The `-e` marks this as an "editable" install — this means any updates to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
-
-Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
+The commands above automatically perform an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package.
 
 ### Using `venv`
 
@@ -55,31 +48,14 @@ Once you have a proper Python install, create a new virtual environment by runni
 python -m venv env
 ```
 
-This creates a subfolder called `env` containing the files for the virtual environment. Next we need to activate the environment and install the necessary pre-requisites
+This creates a subfolder called `env` containing the files for the virtual environment. Next we need to activate the environment and install the package with its pre-requisites:
 
 ```sh
 source env/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
-To use an NVIDIA GPU, run
-
-```sh
-source env/bin/activate
-pip install -r requirements-cuda.txt
-```
-
-Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
-
-Finally, install the `pynsm` package:
-
-```sh
-pip install -e .
-```
-
-The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
-
-Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
+The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package.
 
 ## Example Usage
 

@@ -13,3 +13,9 @@ dependencies:
     - pytorch
     - torchvision
     - scikit-learn
+    - ipykernel
+    - matplotlib
+    - seaborn
+    - pytest
+    - pip:
+        - --editable .
