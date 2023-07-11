@@ -43,8 +43,6 @@ pip install -e .
 
 The `-e` marks this as an "editable" install — this means any updates to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
 
-Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
-
 ### Using `venv`
 
 Before creating a new virtual environment, it is best to ensure you're not using the system version of Python — this is often badly out of date. Some options for doing this are outlined in [The Hitchhiker's Guide to Python](https://docs.python-guide.org/starting/installation/#installation-guides), although many options exist. One advantage of using `conda` is that this is done for you.
@@ -55,31 +53,14 @@ Once you have a proper Python install, create a new virtual environment by runni
 python -m venv env
 ```
 
-This creates a subfolder called `env` containing the files for the virtual environment. Next we need to activate the environment and install the necessary pre-requisites
+This creates a subfolder called `env` containing the files for the virtual environment. Next we need to activate the environment and install the package with its pre-requisites:
 
 ```sh
 source env/bin/activate
-pip install -r requirements.txt
-```
-
-To use an NVIDIA GPU, run
-
-```sh
-source env/bin/activate
-pip install -r requirements-cuda.txt
-```
-
-Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
-
-Finally, install the `pynsm` package:
-
-```sh
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
-
-Note that you will also need to install `jupyter` to run the notebook demos and `pytest` if you want to run the tests.
 
 ## Example Usage
 
