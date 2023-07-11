@@ -1,6 +1,6 @@
 # Non-negative similarity matching in PyTorch
 
-[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-green.svg)](https://www.python.org/downloads/release/python-380/)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 This is an implementation of non-negative similarity matching (NSM) for PyTorch focusing on ease of use, extensibility, and speed.
@@ -20,7 +20,7 @@ It is strongly recommended to use a virtual environment when working with this c
 
 If you do not have `conda` installed, the easiest way to get started is with [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Follow the installation instructions for your system.
 
-Next, create a new environment and install the necessary pre-requisites using
+Next, create a new environment and install using
 
 ```sh
 conda env create -f environment.yml
@@ -33,15 +33,6 @@ conda env create -f environment-cuda.yml
 ```
 
 for using an NVIDIA GPU. Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
-
-Finally, activate the environment and install the `pynsm` package:
-
-```sh
-conda activate pynsm
-pip install -e .
-```
-
-The `-e` marks this as an "editable" install — this means any updates to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
 
 ### Using `venv`
 
