@@ -1,7 +1,8 @@
 # Non-negative similarity matching in PyTorch
 
+[![PyPI Version](https://img.shields.io/pypi/v/pynsm.svg)](https://pypi.org/project/pynsm/)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-green.svg)](https://www.python.org/downloads/release/python-380/)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/pypi/l/pynsm.svg)](https://github.com/Shagesh/pytorch-NSM/blob/master/LICENSE)
 
 This is an implementation of non-negative similarity matching (NSM) for PyTorch focusing on ease of use, extensibility, and speed.
 
@@ -11,6 +12,14 @@ This is an implementation of non-negative similarity matching (NSM) for PyTorch 
 - [Example usage](#example-usage)
 - [Features](#features)
 - [Questions?](#questions)
+
+## Installation
+
+You can install the package from PyPI by using
+
+```sh
+pip install pynsm
+```
 
 ## Installation (development)
 
