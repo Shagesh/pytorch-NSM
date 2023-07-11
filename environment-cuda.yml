@@ -8,10 +8,14 @@ channels:
 
 dependencies:
     - python=3.9
-    - pytorch::pytorch-cuda=11.8
-    - pytorch::pytorch=2.0
-    - pytorch::torchvision=0.15
-    - conda-forge::scikit-learn=1.2
-    - conda-forge::numpy=1.24
-    - conda-forge::tqdm=4.65
-    - conda-forge::pip=23
+    - pytorch-cuda=11.8
+    - pytorch=2.0
+    - torchvision
+    - scikit-learn
+    - numpy
+    - tqdm
+    - pip
+    - ipykernel
+    - matplotlib
+    - seaborn
+    - pytest

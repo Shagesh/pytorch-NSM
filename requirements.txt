@@ -1,8 +1,12 @@
 numpy
-scipy
 tqdm
 matplotlib
 seaborn
 torch
 torchvision
 scikit-learn
+pytest
+tqdm
+matplotlib
+seaborn
+ipykernel
