@@ -12,7 +12,9 @@ This is an implementation of non-negative similarity matching (NSM) for PyTorch 
 - [Features](#features)
 - [Questions?](#questions)
 
-## Installation
+## Installation (development)
+
+These instructions are for development use (i.e., if you want to make changes to the package). Instructions for users will be added soon.
 
 It is strongly recommended to use a virtual environment when working with this code. The installation instructions below include the commands for creating the virtual environment, using either `conda` (recommended) or `venv`.
 
@@ -20,19 +22,21 @@ It is strongly recommended to use a virtual environment when working with this c
 
 If you do not have `conda` installed, the easiest way to get started is with [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Follow the installation instructions for your system.
 
-Next, create a new environment and install using
+Next, create a new environment and install for CPU using
 
 ```sh
 conda env create -f environment.yml
 ```
 
-for using the CPU or
+For using an NVIDIA GPU run
 
 ```sh
 conda env create -f environment-cuda.yml
 ```
 
-for using an NVIDIA GPU. Note that most Macs do not have an NVIDIA GPU. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration.
+Note that most Macs do not have an NVIDIA GPU, so you should use the first invocation shown above. If your Mac uses the newer Apple chips, you may be able to use ``device = mps`` to get GPU acceleration (the installation procedure remains unchanged).
+
+The commands above automatically perform an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package.
 
 ### Using `venv`
 
@@ -51,7 +55,7 @@ source env/bin/activate
 pip install -e ".[dev]"
 ```
 
-The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package. This is mainly useful for developers.
+The `-e` marks this as an "editable" install — this means that changes made to the code will automatically take effect without having to reinstall the package.
 
 ## Example Usage
 
