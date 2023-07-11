@@ -13,6 +13,14 @@ This is an implementation of non-negative similarity matching (NSM) for PyTorch 
 - [Features](#features)
 - [Questions?](#questions)
 
+## Installation
+
+You can install the package from PyPI by using
+
+```sh
+pip install pynsm
+```
+
 ## Installation (development)
 
 These instructions are for development use (i.e., if you want to make changes to the package). Instructions for users will be added soon.
