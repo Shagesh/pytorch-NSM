@@ -19,11 +19,19 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 keywords = ["neural network", "biology", "research"]
-dependencies = ["numpy", "torch", "torchvision", "scikit-learn"]
-requires-python = ">=3.6"
+dependencies = ["numpy", "torch"]
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
-dev = ["pytest", "matplotlib", "seaborn", "ipykernel", "tqdm"]
+dev = [
+    "pytest",
+    "matplotlib",
+    "seaborn",
+    "ipykernel",
+    "tqdm",
+    "torchvision",
+    "scikit-learn",
+]
 
 [project.urls]
 Source = "https://github.com/Shagesh/pytorch-NSM"
