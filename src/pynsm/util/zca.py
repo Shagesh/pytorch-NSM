@@ -70,15 +70,3 @@ class ZCATransformation(object):
         format_string = self.__class__.__name__ + "("
         format_string += str(self.transformation_matrix.numpy().tolist()) + ")"
         return format_string
-
-
-class CustomImageDataset(Dataset):
-    def __init__(self, X, Y, transform=None, target_transform=None):
-        self.img_labels = Y
-        self.img = X
-
-    def __len__(self):
-        return len(self.img_labels)
-
-    def __getitem__(self, idx):
-        return self.img[idx], self.img_labels[idx]
