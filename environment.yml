@@ -20,3 +20,4 @@ dependencies:
     - sphinx
     - pip:
         - --editable .
+        - sphinx_rtd_theme
