@@ -19,5 +19,6 @@ dependencies:
     - matplotlib
     - seaborn
     - pytest
+    - sphinx
     - pip:
         - --editable .
