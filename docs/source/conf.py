@@ -2,6 +2,11 @@
 
 # -- Project information
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src")))
+
 project = 'pynsm'
 copyright = '2023, Tesileanu, Sridharan, Bahroun'
 author = 'Tesileanu, Sridharan, Bahroun'
