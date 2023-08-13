@@ -4,6 +4,7 @@
 
 import os
 import sys
+from importlib import metadata
 
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src")))
 
@@ -11,8 +12,8 @@ project = 'pynsm'
 copyright = '2023, Tesileanu, Sridharan, Bahroun'
 author = 'Tesileanu, Sridharan, Bahroun'
 
-release = '0.9'
-version = '0.9.1'
+release = metadata.version(project)
+version = '.'.join(release.split('.')[:2])
 
 # -- General configuration
 
