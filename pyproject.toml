@@ -23,6 +23,14 @@ dependencies = ["numpy", "torch"]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
+docs = [
+    "mkdocs",
+    "mkdocstrings[python]",
+    "mkdocs_section_index",
+    "mkdocs_gen_files",
+    "mkdocs_literate_nav",
+    "mkdocs-gallery",
+]
 dev = [
     "pytest",
     "matplotlib",
