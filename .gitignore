@@ -9,3 +9,5 @@ env
 _version.py
 
 dist/*
+
+TODO.txt
