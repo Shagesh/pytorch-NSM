@@ -1,4 +1,4 @@
-# Non-negative similarity matching in PyTorch
+# **Non-negative similarity matching in PyTorch**
 
 The `pynsm` package provides PyTorch implementations of neural networks that are based on similarity matching. These networks were introduced in the biologically plausible neural network literature. They typically contain lateral connections, requiring the forward pass to solve a fixed-point problem.
 
