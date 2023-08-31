@@ -15,11 +15,17 @@ pip install pynsm
 ```
 
 ## User documentation
-Find examples, how-to guides, tutorials, and full API reference information on https://pynsm.readthedocs.io/.
+Find examples, how-to guides, tutorials, and full API reference information on Readthedocs, https://pynsm.readthedocs.io/.
 
 ## Questions or issues?
 
 Please contact us by opening an issue on GitHub.
+
+<br/>
+
+*********************************************************
+
+<br/>
 
 ## Instructions for developers
 
@@ -27,7 +33,7 @@ Please contact us by opening an issue on GitHub.
 
 It is strongly recommended to use a virtual environment when working with this code. The installation instructions below include the commands for creating the virtual environment, using either `conda` (recommended) or `venv`.
 
-#### Develop install using `conda`
+#### Developer install using `conda`
 
 If you do not have `conda` installed, the easiest way to get started is with [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Follow the installation instructions for your system.
 
