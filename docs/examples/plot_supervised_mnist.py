@@ -35,7 +35,7 @@ classes = [str(i) for i in range(10)]
 
 # %%
 # Create training and test data loaders.
-batch_size = 100
+batch_size = 128
 
 train_loader = torch.utils.data.DataLoader(
     train_data, batch_size=batch_size, shuffle=True
@@ -68,7 +68,7 @@ for i in range(3):
 
 # %%
 torch.manual_seed(42)
-n_epochs = 3
+n_epochs = 1
 num_labels = len(classes)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
