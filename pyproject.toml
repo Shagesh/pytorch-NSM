@@ -30,6 +30,13 @@ docs = [
     "mkdocs_gen_files",
     "mkdocs_literate_nav",
     "mkdocs-gallery",
+    "numpy",
+    "torch",
+    "matplotlib",
+    "seaborn",
+    "tqdm",
+    "torchvision",
+    "scikit-learn",
 ]
 dev = [
     "pytest",
