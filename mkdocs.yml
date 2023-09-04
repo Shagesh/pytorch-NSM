@@ -12,7 +12,11 @@ theme:
     
 plugins:
     - search                            # make sure the search plugin is still enabled
-    - mkdocstrings                      # generating documentation from docstrings
+    - mkdocstrings:                     # generating documentation from docstrings
+        handlers:
+          python:
+            options:
+              docstring_style: sphinx
     - gen-files:
         scripts:
             - docs/gen_ref_pages.py     # script for generating reference pages
