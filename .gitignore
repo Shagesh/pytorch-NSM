@@ -11,3 +11,5 @@ _version.py
 dist/*
 
 TODO.txt
+
+build/lib

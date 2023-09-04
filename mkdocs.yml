@@ -7,6 +7,8 @@ theme:
     primary: 'light blue'
   features:
     - navigation.sections
+    - content.code.copy
+    - content.code.select
     
 plugins:
     - search                            # make sure the search plugin is still enabled
@@ -17,14 +19,19 @@ plugins:
     - literate-nav:
           nav_file: docs/SUMMARY.md     # navigation file for literate navigation
     - section-index                     # plugin for creating section index
-    - gallery:
-        examples_dirs: docs/examples          # path to your example scripts
-        gallery_dirs: docs/generated/gallery  # where to save generated gallery
+    - mkdocs-jupyter
         
 markdown_extensions:
   - footnotes
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
       
 extra_javascript:
   - javascript/mathjax.js
@@ -37,7 +44,9 @@ nav:
       - Installation: install.md
     - Get started:
       - Basic usage: basic_usage.md
-      - Examples: generated/gallery
+      - Examples:
+        - Convolutional NSM: examples/demo_nsm_conv_mnist.ipynb
+        - Supervised NSM: examples/demo_supervised_mnist.ipynb
     - Background:
       - Similarity matching: similarity.md
       - Supervised learning: supervised.md
