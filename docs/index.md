@@ -14,7 +14,7 @@ For more details, see [installation](install.md).
 
 ## Getting started
 
-To get started, check out the [basic usage page](basic_usage.md). The [examples](examples/generated) show more complex usage patterns.
+To get started, check out the [basic usage page](basic_usage.md). The examples show more complex usage patterns.
 
 ## How tos
 Check out the how-to guides in the navigation bar for instructions on how to use or extend the code.
@@ -23,4 +23,4 @@ Check out the how-to guides in the navigation bar for instructions on how to use
 If you are unsure what non-negative similarity matching is or why you should care, check out the Background pages in the navigation bar.
 
 ## API reference
-See [reference](reference/).
+For details about the classes and functions in the package, check out the API reference in the navigation bar.
