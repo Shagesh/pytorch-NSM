@@ -4,6 +4,8 @@ repo_url: https://github.com/Shagesh/pytorch-NSM
 
 theme:
   name: material
+  logo: img/icon_128px.png
+  favicon: img/icon_black_128px.png
   palette:
     primary: "light blue"
   features:
