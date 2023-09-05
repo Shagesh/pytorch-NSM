@@ -29,7 +29,7 @@ docs = [
     "mkdocs_section_index",
     "mkdocs_gen_files",
     "mkdocs_literate_nav",
-    "mkdocs-gallery",
+    "mkdocs-jupyter",
 ]
 dev = [
     "pytest",
