@@ -1,41 +1,82 @@
 site_name: pynsm
+site_description: "Similarity matching in PyTorch"
 repo_url: https://github.com/Shagesh/pytorch-NSM
 
 theme:
-  name: 'material'
+  name: material
   palette:
-    primary: 'light blue'
+    primary: "light blue"
   features:
-    - navigation.sections
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
     - content.code.copy
-    - content.code.select
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
     
 plugins:
     - search                            # make sure the search plugin is still enabled
+    - gen-files:
+        scripts:
+            - scripts/gen_ref_pages.py  # script for generating reference pages
+    - literate-nav:
+          nav_file: SUMMARY.txt         # navigation file for literate navigation
     - mkdocstrings:                     # generating documentation from docstrings
         handlers:
           python:
             options:
+              docstring_options:
+                ignore_init_summary: true
               docstring_style: sphinx
-    - gen-files:
-        scripts:
-            - docs/gen_ref_pages.py     # script for generating reference pages
-    - literate-nav:
-          nav_file: docs/SUMMARY.md     # navigation file for literate navigation
-    - section-index                     # plugin for creating section index
+              merge_init_into_class: true
+              docstring_section_style: list
+              heading_level: 1
+              separate_signature: true
+              show_root_heading: true
+              show_root_full_path: false
+              show_signature_annotations: true
+              show_symbol_type_heading: true
+              show_symbol_type_toc: true
+              signature_crossrefs: true
+              summary: true
     - mkdocs-jupyter
         
 markdown_extensions:
+  - attr_list
+  - admonition
   - footnotes
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      check_paths: true
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
       
 extra_javascript:
   - javascript/mathjax.js
@@ -57,4 +98,8 @@ nav:
     - How-to guides:
       - Build a classifier: classifier.md
       - Extend the library: extending.md
-    - API reference: reference/
+    - API reference:
+      - pynsm: reference/
+
+extra_css:
+  - css/mkdocstrings.css
