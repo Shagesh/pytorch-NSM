@@ -17,6 +17,9 @@ class MultiSimilarityMatching(IterationLossModule):
     :param encoders: modules to use for encoding the inputs
     :param out_channels: number of output channels
     :param tau: factor by which to divide the competitor's learning rate
+    :param tol: tolerance for convergence test (disabled by default); if the change in
+        every element of the output after an iteration is smaller than `tol` in absolute
+        value, the iteration is assumed to have converged
     :param max_iterations: maximum number of iterations to run in `forward()`
     :param regularization: type of encoder regularization to use; this can be a single
         string, or a sequence, to have different regularizations for each encoder;
@@ -38,6 +41,7 @@ class MultiSimilarityMatching(IterationLossModule):
         encoders: Sequence[nn.Module],
         out_channels: int,
         tau: float = 0.1,
+        tol: float = 0.0,
         max_iterations: int = 40,
         regularization: Union[str, Sequence[str]] = "weight",
         **kwargs,
@@ -47,6 +51,7 @@ class MultiSimilarityMatching(IterationLossModule):
         self.encoders = nn.ModuleList(encoders)
         self.out_channels = out_channels
         self.tau = tau
+        self.tol = tol
 
         if isinstance(regularization, str):
             self.regularization = [regularization] * len(self.encoders)
@@ -88,6 +93,7 @@ class MultiSimilarityMatching(IterationLossModule):
             Wx_sum += w
         self._Wx_sum = Wx_sum
 
+        self._last_y = None
         self.y = torch.zeros_like(Wx[0])
         super().pre_iteration(*args)
 
@@ -105,6 +111,16 @@ class MultiSimilarityMatching(IterationLossModule):
         assert self._Wx is not None
         loss = self._loss_no_reg(self._Wx, self.y, "sum")
         return loss / 4
+
+    def converged(self, *args: Optional[torch.Tensor]) -> bool:
+        if self._last_y is not None:
+            change = self.y.detach() - self._last_y
+            result = change.abs().max() < self.tol
+        else:
+            result = False
+
+        self._last_y = self.y.detach().clone()
+        return result
 
     def post_iteration(self, *args: Optional[torch.Tensor]) -> torch.Tensor:
         super().post_iteration(*args)
