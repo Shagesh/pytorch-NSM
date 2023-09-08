@@ -1,4 +1,4 @@
-"""Define a convolutional NSM module."""
+"""Define similarity match modules."""
 
 import torch
 from torch import nn
@@ -9,43 +9,49 @@ from .base import IterationLossModule
 
 
 class MultiSimilarityMatching(IterationLossModule):
-    """Multiple-target similarity matching circuit."""
+    """Multiple-target similarity matching circuit.
+
+    Some of the encoders can be skipped during the `forward()` call either by including
+    fewer arguments than `len(encoders)` or by setting some to `None`.
+
+    :param encoders: modules to use for encoding the inputs
+    :param out_channels: number of output channels
+    :param tau: factor by which to divide the competitor's learning rate
+    :param tol: tolerance for convergence test (disabled by default); if the change in
+        every element of the output after an iteration is smaller than `tol` in absolute
+        value, the iteration is assumed to have converged
+    :param max_iterations: maximum number of iterations to run in `forward()`
+    :param regularization: type of encoder regularization to use; this can be a single
+        string, or a sequence, to have different regularizations for each encoder;
+        options are
+
+        * `"weight"`:   use the encoders' parameters; regularization is added for all
+                        the tensors returned by `encoder.parameters()`, as long as those
+                        tensors are trainable (i.e., `requires_grad` is true)
+        * `"whiten"`:   use a regularizer that encourages whitening
+        * `"none"`:     do not use regularization for the encoder; most useful to allow
+                        for custom regularization, since lack of regularization leads to
+                        unstable dynamics in many cases
+
+    :param **kwargs: additional keyword arguments passed to `IterationLossModule`
+    """
 
     def __init__(
         self,
         encoders: Sequence[nn.Module],
         out_channels: int,
         tau: float = 0.1,
+        tol: float = 0.0,
         max_iterations: int = 40,
         regularization: Union[str, Sequence[str]] = "weight",
         **kwargs,
     ):
-        """Initialize the supervised similarity matching circuit.
-
-        Some of the encoders can be skipped during the `forward()` call either by
-        including fewer arguments than `len(encoders)` or by setting some to `None`.
-
-        :param encoders: modules to use for encoding the inputs
-        :param out_channels: number of output channels
-        :param tau: factor by which to divide the competitor's learning rate
-        :param max_iterations: maximum number of iterations to run in `forward()`
-        :param regularization: type of encoder regularization to use; this can be a
-            single string, or a sequence, to have different regularizations for each
-            encoder; options are
-            "weight":   use the encoders' parameters; regularization is added for all
-                        the tensors returned by `encoder.parameters()`, as long as those
-                        tensors are trainable (i.e., `requires_grad` is true)
-            "whiten":   use a regularizer that encourages whitening XXX explain
-            "none":     do not use regularization for the encoder; most useful to allow
-                        for custom regularization, since lack of regularization leads to
-                        unstable dynamics in many cases
-        :param **kwargs: additional keyword arguments passed to `IterationLossModule`
-        """
         super().__init__(max_iterations=max_iterations, **kwargs)
 
         self.encoders = nn.ModuleList(encoders)
         self.out_channels = out_channels
         self.tau = tau
+        self.tol = tol
 
         if isinstance(regularization, str):
             self.regularization = [regularization] * len(self.encoders)
@@ -87,6 +93,7 @@ class MultiSimilarityMatching(IterationLossModule):
             Wx_sum += w
         self._Wx_sum = Wx_sum
 
+        self._last_y = None
         self.y = torch.zeros_like(Wx[0])
         super().pre_iteration(*args)
 
@@ -104,6 +111,16 @@ class MultiSimilarityMatching(IterationLossModule):
         assert self._Wx is not None
         loss = self._loss_no_reg(self._Wx, self.y, "sum")
         return loss / 4
+
+    def converged(self, *args: Optional[torch.Tensor]) -> bool:
+        if self._last_y is not None:
+            change = self.y.detach() - self._last_y
+            result = change.abs().max() < self.tol
+        else:
+            result = False
+
+        self._last_y = self.y.detach().clone()
+        return result
 
     def post_iteration(self, *args: Optional[torch.Tensor]) -> torch.Tensor:
         super().post_iteration(*args)
@@ -174,17 +191,16 @@ class MultiSimilarityMatching(IterationLossModule):
 
 
 class SimilarityMatching(MultiSimilarityMatching):
-    """Similarity matching circuit."""
+    """Single-input similarity matching circuit.
+
+    This is a thin wrapper around `MultiSimilarityMatching` using a single target.
+
+    :param encoder: module to use for encoding the inputs
+    :param out_channels: number of output channels
+    :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
+    """
 
     def __init__(self, encoder: nn.Module, out_channels: int, **kwargs):
-        """Initialize the similarity matching circuit.
-
-        This is a thin wrapper around `MultiSimilarityMatching` using a single target.
-
-        :param encoder: module to use for encoding the inputs
-        :param out_channels: number of output channels
-        :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
-        """
         super().__init__(encoders=[encoder], out_channels=out_channels, **kwargs)
 
     @property
@@ -193,7 +209,25 @@ class SimilarityMatching(MultiSimilarityMatching):
 
 
 class SupervisedSimilarityMatching(MultiSimilarityMatching):
-    """Supervised similarity matching circuit for classification."""
+    """Supervised similarity matching circuit for classification.
+
+    This is a wrapper that uses `MultiSimilarityMatching` with two encoders,
+    `self.encoders == [encoder, label_encoder]`. The `label_encoder` is generated
+    internally to map *floating-point* one-hot labels (which is what `forward()`
+    expects) to a one-dimensional output of size `out_channels`. The `forward()`
+    iteration is adapted to extend the output of the `label_encoder` to the same shape
+    as the output from the `encoder()`, so it can be used in the similarity matching
+    objective.
+
+    Note that by default `"whiten"` regularization is used for the label encoder and
+    `"weight"` regularization for the input encoder.
+
+    :param encoder: module to use for encoding the inputs
+    :param num_classes: number of classes for classification
+    :param out_channels: number of output channels
+    :param label_bias: set to true to include a bias term in the label encoder
+    :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
+    """
 
     def __init__(
         self,
@@ -203,25 +237,6 @@ class SupervisedSimilarityMatching(MultiSimilarityMatching):
         label_bias: bool = False,
         **kwargs,
     ):
-        """Initialize the supervised similarity matching circuit.
-
-        This is a wrapper that uses `MultiSimilarityMatching` with two encoders,
-        `self.encoders == [encoder, label_encoder]`. The `label_encoder` is generated
-        internally to map *floating-point* one-hot labels (which is what `forward()`
-        expects) to a one-dimensional output of size `out_channels`. The `forward()`
-        iteration is adapted to extend the output of the `label_encoder` to the same
-        shape as the output from the `encoder()`, so it can be used in the similarity
-        matching objective.
-
-        Note that by default `"whiten"` regularization is used for the label encoder and
-        `"weight"` regularization for the input encoder.
-
-        :param encoder: module to use for encoding the inputs
-        :param num_classes: number of classes for classification
-        :param out_channels: number of output channels
-        :param label_bias: set to true to include a bias term in the label encoder
-        :param **kwargs: additional keyword arguments go to `MultiSimilarityMatching`
-        """
         label_encoder = nn.Linear(num_classes, out_channels, bias=label_bias)
         if "regularization" not in kwargs:
             kwargs["regularization"] = ("weight", "whiten")

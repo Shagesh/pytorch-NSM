@@ -13,3 +13,5 @@ dist/*
 TODO.txt
 
 build/lib
+
+.DS_Store

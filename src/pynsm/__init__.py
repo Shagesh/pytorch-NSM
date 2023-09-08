@@ -1,3 +1,8 @@
+"""pynsm package.
+
+Non-negative similarity matching in PyTorch.
+"""
+
 from importlib.metadata import version
 
 __version__ = version("pynsm")

@@ -1,4 +1,4 @@
-"""Define base module class."""
+"""Define iteration-based modules."""
 import torch
 from torch import nn
 
@@ -28,7 +28,7 @@ class IterationModule(nn.Module):
     """
 
     def __init__(self, max_iterations: int = 1000, **kwargs):
-        """Initialize the module.
+        """Module constructor:
 
         :param max_iterations: maximum number of `iteration()` calls in one forward pass
         """
@@ -41,11 +41,12 @@ class IterationModule(nn.Module):
         """Register a hook for the forward iteration.
 
         Hooks can be assigned for the following events:
-        * pre:          called before `pre_iteration()`
+
+        * `"pre"`:       called before `pre_iteration()`
             signature: `hook(module)`
-        * post:         called after `post_iteration()`
+        * `"post"`:      called after `post_iteration()`
             signature: `hook(module)`
-        * iteration:    called after every call to `iteration()` (before `converged()`)
+        * `"iteration"`: called after every call to `iteration()` (before `converged()`)
             signature: `hook(module) -> bool`
             A truthful return value ends the iteration. The iteration index is available
             in `module.iteration_idx`.
@@ -61,6 +62,15 @@ class IterationModule(nn.Module):
         self.hooks[kind].append(hook)
 
     def forward(self, *args, **kwargs) -> Any:
+        """Forward pass.
+
+        This sets up the iteration using `self.pre_iteration()`, then runs at most
+        `self.max_iterations` calls to `self.iteration`, checking for `self.converged()`
+        for every iteration, and finally obtains the return value by calling
+        `self.post_iteration()`.
+
+        All positional and keyword arguments are passed to all of the calls.
+        """
         self.iteration_idx = -1
 
         self._call_hooks(self.hooks["pre"])
@@ -79,17 +89,33 @@ class IterationModule(nn.Module):
         return retval
 
     def iteration(self, *args, **kwargs):
+        """Run one iteration.
+
+        Abstract method, has to be implemented by descendants.
+        """
         raise NotImplementedError(
             f'Module [{type(self).__name__}] is missing the required "iteration" function'
         )
 
     def converged(self, *args, **kwargs) -> bool:
+        """Check whether the iteration converged.
+
+        Always returns false. Override in descendants as needed.
+        """
         return False
 
     def pre_iteration(self, *args, **kwargs):
+        """Set up the iteration.
+
+        Does nothing by default. Override in descendants as needed.
+        """
         pass
 
     def post_iteration(self, *args, **kwargs) -> Any:
+        """Finalize the iteration and generate a return value.
+
+        Does nothing by default. Override in descendants as needed.
+        """
         pass
 
     def _call_hooks(self, hooks: List[Callable], check_output: bool = False) -> bool:
@@ -106,20 +132,21 @@ class IterationLossModule(IterationModule):
     function.
 
     This creates an optimizer in the `pre_iteration()`, then for each iteration runs
-    `backward()` on the output from `self.iteration_loss()` and steps the optimizer.
-    This is followed by an optional projection step; see `iteration_projection` below.
-    Note that projection is a very simple way of enforcing constraints, and might not
-    work well with adaptive step optimizers.
+    `backward()` on the output from `iteration_loss()` and steps the optimizer. This is
+    followed by an optional projection step; see `iteration_projection` below. Note that
+    projection is a very simple way of enforcing constraints, and might not work well
+    with adaptive step optimizers.
 
     The constructor has options for choosing the optimizer to use, as well as for an
     optional learning-rate scheduler; see below.
 
     Functions to implement:
+
       * `iteration_loss(*args, **kwargs)` should return the loss; the output is stored
         in `self.last_iteration_loss` as a number (i.e. `item()` is called on the tensor
         output from `iteration_loss()`)
       * `iteration_parameters()` should return a list of parameters to be optimized
-        during the iteration
+        during the iteration.
 
     Note that typically the `iteration_parameters()` should *not* be included in the
     module's `parameters()`, but should potentially be saved as part of the
@@ -141,7 +168,7 @@ class IterationLossModule(IterationModule):
         iteration_projection: Optional[Callable] = None,
         **kwargs,
     ) -> None:
-        """Initialize the module.
+        """Module constructor:
 
         :param iteration_optimizer: optimizer to use for forward iteration; e.g.,
             `torch.optim.SGD`
@@ -174,6 +201,12 @@ class IterationLossModule(IterationModule):
         self.last_iteration_loss = None
 
     def iteration(self, *args, **kwargs):
+        """Run one iteration.
+
+        This calculates the gradients using `self.iteration_set_gradients()`, then steps
+        the optimizer and scheduler (if any), and finally projects the result using
+        `self.iteration_projection`.
+        """
         self.iteration_set_gradients(*args, **kwargs)
 
         self.iteration_optimizer.step()
@@ -229,6 +262,11 @@ class IterationLossModule(IterationModule):
         return super().post_iteration(*args, **kwargs)
 
     def iteration_set_gradients(self, *args, **kwargs):
+        """Calculate gradients for the iteration.
+
+        This uses a backward pass on the result from `iteration_loss()`. Override as
+        needed to process the gradients before using in the optimizer.
+        """
         self.iteration_optimizer.zero_grad()
 
         loss = self.iteration_loss(*args, **kwargs)
@@ -237,12 +275,22 @@ class IterationLossModule(IterationModule):
         self.last_iteration_loss = loss.item()
 
     def iteration_loss(self, *args, **kwargs):
+        """Loss function used for the iteration.
+
+        Abstract method, has to be implemented by descendants. (Alternatively,
+        `iteration_set_gradients()` can be overridden to avoid calling `iteration_loss()`
+        altogether.)
+        """
         raise NotImplementedError(
             f"Module [{type(self).__name__}] is missing the required "
             f'"iteration_loss" function'
         )
 
     def iteration_parameters(self) -> List[Union[torch.Tensor, nn.Module]]:
+        """Return list of iteration parameters.
+
+        Abstract method, has to be implemented by descendants.
+        """
         raise NotImplementedError(
             f"Module [{type(self).__name__}] is missing the required "
             f'"iteration_parameters" function'

@@ -1,4 +1,4 @@
-"""Define functions to validate circuit output."""
+"""Define functions to help in validating circuit output."""
 
 import torch
 import torch.utils

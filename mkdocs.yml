@@ -4,6 +4,8 @@ repo_url: https://github.com/Shagesh/pytorch-NSM
 
 theme:
   name: material
+  logo: img/icon_128px.png
+  favicon: img/icon_black_128px.png
   palette:
     primary: "light blue"
   features:
@@ -89,15 +91,17 @@ nav:
       - Installation: install.md
     - Get started:
       - Basic usage: basic_usage.md
-      - Examples:
-        - Convolutional NSM: examples/demo_nsm_conv_mnist.ipynb
-        - Supervised NSM: examples/demo_supervised_mnist.ipynb
     - Background:
       - Similarity matching: similarity.md
       - Supervised learning: supervised.md
     - How-to guides:
       - Build a classifier: classifier.md
       - Extend the library: extending.md
+    - Examples:
+      - PCA by similarity matching: examples/demo_pca.ipynb
+      - Clustering using NSM: examples/demo_clustering.ipynb
+      - Convolutional NSM: examples/demo_nsm_conv_mnist.ipynb
+      - Supervised NSM: examples/demo_supervised_mnist.ipynb
     - API reference:
       - pynsm: reference/
 

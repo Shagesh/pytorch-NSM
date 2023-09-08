@@ -1,3 +1,5 @@
+"""Module definitions."""
+
 from .base import IterationModule, IterationLossModule
 
 from .similarity import SimilarityMatching, MultiSimilarityMatching
