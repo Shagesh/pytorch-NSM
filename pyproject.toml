@@ -43,7 +43,7 @@ dev = [
 
 [project.urls]
 Source = "https://github.com/Shagesh/pytorch-NSM"
-# Docs = "somewhere-on-readthedocs"
+Docs = "https://pynsm.readthedocs.io"
 
 [tool.setuptools_scm]
 write_to = "src/pynsm/_version.py"
