@@ -17,7 +17,5 @@ dependencies:
     - matplotlib
     - seaborn
     - pytest
-    - sphinx
     - pip:
         - --editable .
-        - sphinx_rtd_theme
